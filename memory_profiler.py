@@ -888,7 +888,7 @@ def get_results(prof, precision=1):
 
     for (filename, lines) in prof.code_map.items():
         float_format = u'{0}.{1}f'.format(precision + 4, precision)
-        template_mem = u'{0:' + float_format + '} MiB'
+        template_mem = u'{0:'+ float_format +'}'
         for (lineno, mem) in lines:
             if mem:
                 inc = mem[0]
