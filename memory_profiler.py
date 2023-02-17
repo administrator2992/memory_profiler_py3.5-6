@@ -901,7 +901,7 @@ def get_results():
                 total_mem = u''
                 inc = u''
                 occurrences = u''
-            li.append([lineno, total_mem, inc, occurrences, all_lines[lineno - 1]])
+            li.append([lineno, total_mem, inc, occurrences])
     return li
 
 def _func_exec(stmt, ns):
