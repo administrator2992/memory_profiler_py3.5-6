@@ -882,10 +882,9 @@ def show_results(prof, stream=None, precision=1):
             stream.write(tmp)
         stream.write(u'\n\n')
 
-def get_results():
+def get_results(prof, precision=1):
+    di = {}
     li = []
-    prof = LineProfiler(backend='psutil')
-    precision=1
 
     for (filename, lines) in prof.code_map.items():
         float_format = u'{0}.{1}f'.format(precision + 4, precision)
@@ -896,7 +895,8 @@ def get_results():
                 inc = template_mem.format(inc)
             else:
                 inc = u''
-            li.append([lineno, inc])
+            di[lineno] = inc
+    li.append(di)
     return li
 
 def _func_exec(stmt, ns):
@@ -1213,6 +1213,42 @@ def profile(func=None, stream=None, precision=1, backend='psutil'):
 
         return inner_wrapper
 
+def prof_list(func=None, precision=1, backend='psutil'):
+    """
+    Decorator that will run the function and returning profile in list
+    """
+    backend = choose_backend(backend)
+    if backend == 'tracemalloc' and has_tracemalloc:
+        if not tracemalloc.is_tracing():
+            tracemalloc.start()
+    if func is not None:
+        get_prof = partial(LineProfiler, backend=backend)
+        get_results_bound = partial(
+            get_results, precision=precision
+        )
+        if iscoroutinefunction(func):
+            @wraps(wrapped=func)
+            @coroutine
+            def wrapper(*args, **kwargs):
+                prof = get_prof()
+                val = yield from prof(func)(*args, **kwargs)
+                lst = get_results_bound(prof)
+                return val, lst
+        else:
+            @wraps(wrapped=func)
+            def wrapper(*args, **kwargs):
+                prof = get_prof()
+                val = prof(func)(*args, **kwargs)
+                lst = get_results_bound(prof)
+                return val, lst
+
+        return wrapper
+    else:
+        def inner_wrapper(f):
+            return profile(f, precision=precision,
+                           backend=backend)
+
+        return inner_wrapper
 
 def choose_backend(new_backend=None):
     """
