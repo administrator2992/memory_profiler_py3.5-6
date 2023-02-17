@@ -882,6 +882,27 @@ def show_results(prof, stream=None, precision=1):
             stream.write(tmp)
         stream.write(u'\n\n')
 
+def get_results():
+    li = []
+    prof = LineProfiler(backend='psutil')
+    precision=1
+
+    for (filename, lines) in prof.code_map.items():
+        float_format = u'{0}.{1}f'.format(precision + 4, precision)
+        template_mem = u'{0:' + float_format + '} MiB'
+        for (lineno, mem) in lines:
+            if mem:
+                inc = mem[0]
+                total_mem = mem[1]
+                total_mem = template_mem.format(total_mem)
+                occurrences = mem[2]
+                inc = template_mem.format(inc)
+            else:
+                total_mem = u''
+                inc = u''
+                occurrences = u''
+            li.append([lineno, total_mem, inc, occurrences, all_lines[lineno - 1]])
+    return li
 
 def _func_exec(stmt, ns):
     # helper for magic_memit, just a function proxy for the exec
