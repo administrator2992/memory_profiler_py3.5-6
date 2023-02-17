@@ -893,15 +893,10 @@ def get_results():
         for (lineno, mem) in lines:
             if mem:
                 inc = mem[0]
-                total_mem = mem[1]
-                total_mem = template_mem.format(total_mem)
-                occurrences = mem[2]
                 inc = template_mem.format(inc)
             else:
-                total_mem = u''
                 inc = u''
-                occurrences = u''
-            li.append([lineno, total_mem, inc, occurrences])
+            li.append([lineno, inc])
     return li
 
 def _func_exec(stmt, ns):
